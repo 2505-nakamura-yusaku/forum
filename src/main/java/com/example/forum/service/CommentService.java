@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -41,5 +42,57 @@ public class CommentService {
             reports.add(report);
         }
         return reports;
+    }
+
+    /*
+     * レコード追加
+     */
+    public void saveComment(CommentForm reqComment) {
+        Comment saveComment = setCommentEntity(reqComment);
+        commentRepository.save(saveComment);
+    }
+
+    /*
+     * リクエストから取得した情報をEntityに設定
+     */
+    private Comment setCommentEntity(CommentForm reqComment) {
+        Comment comment = new Comment();
+        comment.setId(reqComment.getId());
+        comment.setReportId(reqComment.getReportId());
+        comment.setContent(reqComment.getContent());
+        return comment;
+    }
+
+    /*
+     * 指定レコード取得処理
+     */
+    public CommentForm editComment(Integer id) {
+        Optional<Comment> results = commentRepository.findById(id);
+        if(results.isEmpty()) {
+            return null;
+        }
+        Comment result = results.get();
+        CommentForm comment = setCommentForm(result);
+        return comment;
+    }
+
+    /*
+     * DBから取得したデータをFormに設定
+     */
+    private CommentForm setCommentForm(Comment result) {
+        CommentForm comment = new CommentForm();
+        comment.setId(result.getId());
+        comment.setReportId(result.getReportId());
+        comment.setContent(result.getContent());
+
+        return comment;
+    }
+
+    /*
+     * レコード削除
+     */
+    public void deleteComment(int id) {
+        Integer delId = id;
+        commentRepository.deleteById(delId);
     }
 }
