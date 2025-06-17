@@ -25,10 +25,17 @@ public class ForumController {
      * 投稿内容表示処理
      */
     @GetMapping
-    public ModelAndView top() {
+    public ModelAndView top(@ModelAttribute("start") String start,
+                            @ModelAttribute("end") String end) {
         ModelAndView mav = new ModelAndView();
-        // 投稿を全件取得
-        List<ReportForm> contentData = reportService.findAllReport();
+        List<ReportForm> contentData = null;
+        if(start.isBlank() && end.isBlank()) {
+            // 投稿を全件取得
+            contentData = reportService.findAllReport();
+        }else {
+            // 投稿を絞り込んで取得
+            contentData = reportService.findDaysReport();
+        }
         // コメントを全件取得
         List<CommentForm> commentData = commentService.findAllReport();
         // form用の空のentityを準備

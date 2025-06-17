@@ -9,6 +9,12 @@
 <div class="header-contents">
     <h1>匿名掲示板</h1>
 </div>
+<div class="date">
+    <form action="./" method="get">
+        <input type="date" name="start" value="${start}"> ～ <input type="date" name="end" value="${end}">
+        <input type="submit" value="絞込">
+    </form>
+</div>
 <div class="main-contents">
     <a href="/new">
         <button class="new-button" type="button">新規投稿</button>

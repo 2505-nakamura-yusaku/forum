@@ -25,6 +25,15 @@ public class ReportService {
     }
 
     /*
+     * レコード全件取得処理
+     */
+    public List<ReportForm> findDaysReport() {
+        List<Report> results = reportRepository.findAll();
+        List<ReportForm> reports = setReportForm(results);
+        return reports;
+    }
+
+    /*
      * DBから取得したデータをFormに設定
      */
     private List<ReportForm> setReportForm(List<Report> results) {
