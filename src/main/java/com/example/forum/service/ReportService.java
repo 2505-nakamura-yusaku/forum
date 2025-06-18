@@ -6,7 +6,12 @@ import com.example.forum.repository.entity.Report;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
+import java.text.ParseException;
+
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,16 +24,33 @@ public class ReportService {
      * レコード全件取得処理
      */
     public List<ReportForm> findAllReport() {
-        List<Report> results = reportRepository.findAllByOrderByIdDesc();
+        List<Report> results = reportRepository.findAllByOrderByUpdateDateDesc();
         List<ReportForm> reports = setReportForm(results);
         return reports;
     }
 
     /*
-     * レコード全件取得処理
+     * レコード日付で全件取得処理 ★明日修正：TIMESTAMP型に直して再度確認
      */
-    public List<ReportForm> findDaysReport() {
-        List<Report> results = reportRepository.findAll();
+    public List<ReportForm> findDaysReport(String start,String end) throws ParseException {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Timestamp tsStart = null;
+        Timestamp tsEnd = null;
+        if(!start.isEmpty()) {
+            Date date = sdf.parse(start + " 00:00:00");
+            tsStart = new Timestamp(date.getTime());
+        }else {
+            Date date = sdf.parse("2000-01-01 00:00:00");
+            tsStart = new Timestamp(date.getTime());
+        }
+        if(!end.isEmpty()) {
+            Date date = sdf.parse(end + " 23:59:59");
+            tsEnd = new Timestamp(date.getTime());
+        }else {
+            Date date = sdf.parse("2300-12-31 23:59:59");
+            tsEnd = new Timestamp(date.getTime());
+        }
+        List<Report> results = reportRepository.findAllByUpdateDateBetweenOrderByUpdateDateDesc(tsStart, tsEnd);
         List<ReportForm> reports = setReportForm(results);
         return reports;
     }
@@ -63,6 +85,7 @@ public class ReportService {
     private Report setReportEntity(ReportForm reqReport) {
         Report report = new Report();
         report.setId(reqReport.getId());
+        report.setUpdateDate(reqReport.getUpdateDate());
         report.setContent(reqReport.getContent());
         return report;
     }

@@ -10,6 +10,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.sql.Timestamp;
+import java.text.ParseException;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,7 +28,7 @@ public class ForumController {
      */
     @GetMapping
     public ModelAndView top(@ModelAttribute("start") String start,
-                            @ModelAttribute("end") String end) {
+                            @ModelAttribute("end") String end) throws ParseException {
         ModelAndView mav = new ModelAndView();
         List<ReportForm> contentData = null;
         if(start.isBlank() && end.isBlank()) {
@@ -34,7 +36,13 @@ public class ForumController {
             contentData = reportService.findAllReport();
         }else {
             // 投稿を絞り込んで取得
-            contentData = reportService.findDaysReport();
+            contentData = reportService.findDaysReport(start, end);
+            if(!start.isEmpty()) {
+                mav.addObject("start", start);
+            }
+            if(!end.isEmpty()) {
+                mav.addObject("end", end);
+            }
         }
         // コメントを全件取得
         List<CommentForm> commentData = commentService.findAllReport();
@@ -78,6 +86,24 @@ public class ForumController {
     }
 
     /*
+     * 投稿編集画面表示
+     */
+    @PutMapping("/update/{id}")
+    public ModelAndView updateContent (@PathVariable Integer id,
+                                       @ModelAttribute("formModel") ReportForm report){
+        // UrlParameterのidを更新するentityにセット
+        report.setId(id);
+
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        report.setUpdateDate(timestamp);
+
+        // 編集した投稿を更新
+        reportService.saveReport(report);
+        // rootへリダイレクト
+        return new ModelAndView("redirect:/");
+    }
+
+    /*
      * 投稿削除処理
      */
     @DeleteMapping("/delete/{id}")
@@ -108,8 +134,18 @@ public class ForumController {
                                        @ModelAttribute("formModel") CommentForm comment) {
         // UrlParameterのidを更新するentityにセット
         comment.setId(id);
-        // 編集した投稿を更新
+
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        comment.setUpdateDate(timestamp);
+
+        // 編集したコメントを更新
         commentService.saveComment(comment);
+
+        // 更新に合わせて投稿の更新時間を更新
+        ReportForm report = reportService.editReport(comment.getReportId());
+        report.setUpdateDate(timestamp);
+        reportService.saveReport(report);
+
         // rootへリダイレクト
         return new ModelAndView("redirect:/");
     }
@@ -122,8 +158,16 @@ public class ForumController {
                                    @PathVariable Integer id){
         // UrlParameterのidを更新するentityにセット
         commentForm.setReportId(id);
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        commentForm.setUpdateDate(timestamp);
         // 投稿をテーブルに格納
         commentService.saveComment(commentForm);
+
+        // 更新に合わせて投稿の更新時間を更新
+        ReportForm report = reportService.editReport(commentForm.getReportId());
+        report.setUpdateDate(timestamp);
+        reportService.saveReport(report);
+
         // rootへリダイレクト
         return new ModelAndView("redirect:/");
     }

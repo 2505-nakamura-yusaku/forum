@@ -22,7 +22,7 @@ public class CommentService {
      * レコード全件取得処理
      */
     public List<CommentForm> findAllReport() {
-        List<Comment> results = commentRepository.findAllByOrderByIdDesc();
+        List<Comment> results = commentRepository.findAllByOrderByUpdateDateDesc();
         List<CommentForm> reports = setCommentForm(results);
         return reports;
     }
@@ -59,6 +59,7 @@ public class CommentService {
         Comment comment = new Comment();
         comment.setId(reqComment.getId());
         comment.setReportId(reqComment.getReportId());
+        comment.setUpdateDate(reqComment.getUpdateDate());
         comment.setContent(reqComment.getContent());
         return comment;
     }

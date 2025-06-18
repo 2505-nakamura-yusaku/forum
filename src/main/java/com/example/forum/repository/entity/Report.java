@@ -8,6 +8,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedDate;
+
+import java.sql.Timestamp;
 
 @Entity
 @Table(name = "report")
@@ -21,6 +26,12 @@ public class Report {
 
     @Column
     private String content;
+
+    @Column(name = "update_date", insertable = false, updatable = true)
+    private Timestamp updateDate;
+
+    @Column(name = "create_date", insertable = false, updatable = false)
+    private Timestamp createDate;
 
 }
 

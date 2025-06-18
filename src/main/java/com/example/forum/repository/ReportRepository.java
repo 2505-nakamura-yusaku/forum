@@ -5,12 +5,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 
-import java.util.Date;
+import java.sql.Timestamp;
 import java.util.List;
 
 @Repository
 public interface ReportRepository extends JpaRepository<Report, Integer> {
-    public List<Report> findAllByOrderByIdDesc();
-    public List<Report> findAllByCreateDateBetween(Date startDate, Date endDate);
+    public List<Report> findAllByOrderByUpdateDateDesc();
+    public List<Report> findAllByUpdateDateBetweenOrderByUpdateDateDesc(Timestamp startDate, Timestamp endDate);
 }
 
