@@ -7,6 +7,9 @@ import com.example.forum.service.CommentService;
 import com.example.forum.service.ReportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -28,7 +31,8 @@ public class ForumController {
      */
     @GetMapping
     public ModelAndView top(@ModelAttribute("start") String start,
-                            @ModelAttribute("end") String end) throws ParseException {
+                            @ModelAttribute("end") String end,
+                            @ModelAttribute("errorMessages") String errorMassages) throws ParseException {
         ModelAndView mav = new ModelAndView();
         List<ReportForm> contentData = null;
         if(start.isBlank() && end.isBlank()) {
@@ -56,6 +60,7 @@ public class ForumController {
         mav.addObject("contents", contentData);
         // 返信データオブジェクトを保管
         mav.addObject("comments", commentData);
+        mav.addObject("errorMessages", errorMassages);
         return mav;
     }
 
@@ -78,7 +83,17 @@ public class ForumController {
      * 新規投稿処理
      */
     @PostMapping("/add")
-    public ModelAndView addContent(@ModelAttribute("formModel") ReportForm reportForm){
+    public ModelAndView addContent(@ModelAttribute("formModel") @Validated ReportForm reportForm, BindingResult result){
+        if(result.hasErrors()) {
+            //エラー処理
+            ModelAndView mav = new ModelAndView();
+            //新規投稿の画面に戻る
+            mav.setViewName("/new");
+            //引数のレポートをそのまま戻す
+            mav.addObject("formModel", reportForm);
+            return mav;
+        }
+
         // 投稿をテーブルに格納
         reportService.saveReport(reportForm);
         // rootへリダイレクト
@@ -90,7 +105,17 @@ public class ForumController {
      */
     @PutMapping("/update/{id}")
     public ModelAndView updateContent (@PathVariable Integer id,
-                                       @ModelAttribute("formModel") ReportForm report){
+                                       @ModelAttribute("formModel") @Validated ReportForm report,BindingResult result){
+        if(result.hasErrors()) {
+            //エラー処理
+            ModelAndView mav = new ModelAndView();
+            //新規投稿の画面に戻る
+            mav.setViewName("/edit");
+            //引数のレポートをそのまま戻す
+            mav.addObject("formModel", report);
+            return mav;
+        }
+
         // UrlParameterのidを更新するentityにセット
         report.setId(id);
 
@@ -131,7 +156,17 @@ public class ForumController {
      */
     @PutMapping("/update_comment/{id}")
     public ModelAndView updateContent (@PathVariable Integer id,
-                                       @ModelAttribute("formModel") CommentForm comment) {
+                                       @ModelAttribute("formModel") @Validated CommentForm comment,BindingResult result) {
+        if(result.hasErrors()) {
+            //エラー処理
+            ModelAndView mav = new ModelAndView();
+            //新規投稿の画面に戻る
+            mav.setViewName("/edit_comment");
+            //引数のレポートをそのまま戻す
+            mav.addObject("formModel", comment);
+            return mav;
+        }
+
         // UrlParameterのidを更新するentityにセット
         comment.setId(id);
 
@@ -154,8 +189,26 @@ public class ForumController {
      * 新規返信処理
      */
     @PostMapping("/add_comment/{id}")
-    public ModelAndView addComment(@ModelAttribute("formModel") CommentForm commentForm,
+    public ModelAndView addComment(@ModelAttribute("formModel") @Validated CommentForm commentForm,
+                                   BindingResult result,
                                    @PathVariable Integer id){
+        if(result.hasErrors()) {
+            //エラー処理
+            ModelAndView mav = new ModelAndView();
+            //新規投稿の画面に戻る
+            mav.setViewName("redirect:/");
+            //引数のレポートをそのまま戻す
+            mav.addObject("formModel", commentForm);
+
+            String errorMessages = "";
+            for (ObjectError error : result.getAllErrors()) {
+                // ここでメッセージを取得する。
+                errorMessages += error.getDefaultMessage();
+            }
+            mav.addObject("errorMessages", errorMessages);
+            return mav;
+        }
+
         // UrlParameterのidを更新するentityにセット
         commentForm.setReportId(id);
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());

@@ -7,6 +7,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import org.springframework.data.annotation.LastModifiedDate;
 
@@ -25,6 +26,7 @@ public class Comment {
     @Column
     private int reportId;
 
+    @NonNull
     @Column
     private String content;
 
